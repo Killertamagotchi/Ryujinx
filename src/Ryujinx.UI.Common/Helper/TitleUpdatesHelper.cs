@@ -28,7 +28,7 @@ namespace Ryujinx.UI.Common.Helper
     {
         private static readonly TitleUpdateMetadataJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-        public static List<(TitleUpdateModel, bool IsSelected)> LoadTitleUpdatesJson(VirtualFileSystem vfs, ulong applicationIdBase)
+        public static List<(TitleUpdateModel Update, bool IsSelected)> LoadTitleUpdatesJson(VirtualFileSystem vfs, ulong applicationIdBase)
         {
             var titleUpdatesJsonPath = PathToGameUpdatesJson(applicationIdBase);
 
@@ -49,11 +49,11 @@ namespace Ryujinx.UI.Common.Helper
             }
         }
 
-        public static void SaveTitleUpdatesJson(VirtualFileSystem vfs, ulong applicationIdBase, List<(TitleUpdateModel, bool IsSelected)> updates)
+        public static void SaveTitleUpdatesJson(ulong applicationIdBase, List<(TitleUpdateModel, bool IsSelected)> updates)
         {
             var titleUpdateWindowData = new TitleUpdateMetadata
             {
-                Selected = "",
+                Selected = string.Empty,
                 Paths = [],
             };
 
@@ -77,7 +77,7 @@ namespace Ryujinx.UI.Common.Helper
             JsonHelper.SerializeToFile(titleUpdatesJsonPath, titleUpdateWindowData, _serializerContext.TitleUpdateMetadata);
         }
 
-        private static List<(TitleUpdateModel, bool IsSelected)> LoadTitleUpdates(VirtualFileSystem vfs, TitleUpdateMetadata titleUpdateMetadata, ulong applicationIdBase)
+        private static List<(TitleUpdateModel Update, bool IsSelected)> LoadTitleUpdates(VirtualFileSystem vfs, TitleUpdateMetadata titleUpdateMetadata, ulong applicationIdBase)
         {
             var result = new List<(TitleUpdateModel, bool IsSelected)>();
 
@@ -88,9 +88,7 @@ namespace Ryujinx.UI.Common.Helper
             foreach (string path in titleUpdateMetadata.Paths)
             {
                 if (!File.Exists(path))
-                {
                     continue;
-                }
 
                 try
                 {
@@ -99,21 +97,14 @@ namespace Ryujinx.UI.Common.Helper
                     Dictionary<ulong, ContentMetaData> updates =
                         pfs.GetContentData(ContentMetaType.Patch, vfs, checkLevel);
 
-                    Nca patchNca = null;
-                    Nca controlNca = null;
-
                     if (!updates.TryGetValue(applicationIdBase, out ContentMetaData content))
-                    {
                         continue;
-                    }
 
-                    patchNca = content.GetNcaByType(vfs.KeySet, ContentType.Program);
-                    controlNca = content.GetNcaByType(vfs.KeySet, ContentType.Control);
+                    Nca patchNca = content.GetNcaByType(vfs.KeySet, ContentType.Program);
+                    Nca controlNca = content.GetNcaByType(vfs.KeySet, ContentType.Control);
 
-                    if (controlNca == null || patchNca == null)
-                    {
+                    if (controlNca is null || patchNca is null)
                         continue;
-                    }
 
                     ApplicationControlProperty controlData = new();
 
@@ -138,7 +129,7 @@ namespace Ryujinx.UI.Common.Helper
                 catch (InvalidDataException)
                 {
                     Logger.Warning?.Print(LogClass.Application,
-                        $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {path}");
+                        $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Malformed File: {path}");
                 }
                 catch (IOException exception)
                 {
@@ -155,8 +146,6 @@ namespace Ryujinx.UI.Common.Helper
         }
 
         private static string PathToGameUpdatesJson(ulong applicationIdBase)
-        {
-            return Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "updates.json");
-        }
+            => Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "updates.json");
     }
 }

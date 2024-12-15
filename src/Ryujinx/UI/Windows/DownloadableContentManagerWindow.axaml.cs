@@ -33,9 +33,9 @@ namespace Ryujinx.Ava.UI.Windows
         {
             ContentDialog contentDialog = new()
             {
-                PrimaryButtonText = "",
-                SecondaryButtonText = "",
-                CloseButtonText = "",
+                PrimaryButtonText = string.Empty,
+                SecondaryButtonText = string.Empty,
+                CloseButtonText = string.Empty,
                 Content = new DownloadableContentManagerWindow(applicationLibrary, applicationData),
                 Title = string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowTitle], applicationData.Name, applicationData.IdBaseString),
             };
@@ -61,23 +61,17 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void RemoveDLC(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button)
+            if (sender is Button { DataContext: DownloadableContentModel dlc })
             {
-                if (button.DataContext is DownloadableContentModel model)
-                {
-                    ViewModel.Remove(model);
-                }
+                ViewModel.Remove(dlc);
             }
         }
 
         private void OpenLocation(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button)
+            if (sender is Button { DataContext: DownloadableContentModel dlc })
             {
-                if (button.DataContext is DownloadableContentModel model)
-                {
-                    OpenHelper.LocateFile(model.ContainerPath);
-                }
+                OpenHelper.LocateFile(dlc.ContainerPath);
             }
         }
 

@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
@@ -35,9 +33,9 @@ namespace Ryujinx.Ava.UI.Windows
         {
             ContentDialog contentDialog = new()
             {
-                PrimaryButtonText = "",
-                SecondaryButtonText = "",
-                CloseButtonText = "",
+                PrimaryButtonText = string.Empty,
+                SecondaryButtonText = string.Empty,
+                CloseButtonText = string.Empty,
                 Content = new TitleUpdateWindow(applicationLibrary, applicationData),
                 Title = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.GameUpdateWindowHeading, applicationData.Name, applicationData.IdBaseString),
             };
@@ -64,21 +62,14 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void OpenLocation(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button)
-            {
-                if (button.DataContext is TitleUpdateModel model)
-                {
-                    OpenHelper.LocateFile(model.Path);
-                }
-            }
+            if (sender is Button { DataContext: TitleUpdateModel model })
+                OpenHelper.LocateFile(model.Path);
         }
 
         private void RemoveUpdate(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button)
-            {
-                ViewModel.RemoveUpdate((TitleUpdateModel)button.DataContext);
-            }
+            if (sender is Button { DataContext: TitleUpdateModel model })
+                ViewModel.RemoveUpdate(model);
         }
 
         private void RemoveAll(object sender, RoutedEventArgs e)

@@ -8,16 +8,15 @@ using System;
 
 namespace Ryujinx.Ava.UI.Windows
 {
-    public partial class SettingsWindow : StyleableWindow
+    public partial class SettingsWindow : StyleableAppWindow
     {
-        internal SettingsViewModel ViewModel { get; set; }
+        internal readonly SettingsViewModel ViewModel;
 
         public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
         {
-            Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance[LocaleKeys.Settings]}";
+            Title = App.FormatTitle(LocaleKeys.Settings);
 
-            ViewModel = new SettingsViewModel(virtualFileSystem, contentManager);
-            DataContext = ViewModel;
+            DataContext = ViewModel = new SettingsViewModel(virtualFileSystem, contentManager);
 
             ViewModel.CloseWindow += Close;
             ViewModel.SaveSettingsEvent += SaveSettings;
@@ -28,8 +27,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public SettingsWindow()
         {
-            ViewModel = new SettingsViewModel();
-            DataContext = ViewModel;
+            DataContext = ViewModel = new SettingsViewModel();
 
             InitializeComponent();
             Load();
@@ -82,6 +80,7 @@ namespace Ryujinx.Ava.UI.Windows
                         NavPanel.Content = AudioPage;
                         break;
                     case "NetworkPage":
+                        NetworkPage.ViewModel = ViewModel;
                         NavPanel.Content = NetworkPage;
                         break;
                     case "LoggingPage":
